@@ -32,6 +32,11 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual inline int ExactNumBottomBlobs() const { return 0; }
   virtual inline int ExactNumTopBlobs() const { return 2; }
 
+  // @Wei-Lin: utility to get image names/labels
+  inline const std::vector<std::pair<std::string, int> >& GetDataNameLabel() const { 
+    return lines_; 
+  };
+
  protected:
   shared_ptr<Caffe::RNG> prefetch_rng_;
   virtual void ShuffleImages();

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-TARGET_DATASET=INRIA_Holidays
+TARGET_DATASET=UnitTest_Images
 TARGET_DB=leveldb
 TARGET_IMG_TYPE=JPEG
 

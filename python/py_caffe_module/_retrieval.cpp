@@ -1,9 +1,21 @@
-#include <string>
-#include <vector>
+#include <Python.h>  // NOLINT(build/include_alpha)
 
+// Produce deprecation warnings (needs to come before arrayobject.h inclusion).
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
+#include <boost/make_shared.hpp>
+#include <boost/python.hpp>
+#include <boost/python/raw_function.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <numpy/arrayobject.h>
 #include "boost/algorithm/string.hpp"
+#include "boost/pointer_cast.hpp"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/repeated_field.h"
+
+// these need to be included after boost on OS X
+#include <string>  // NOLINT(build/include_order)
+#include <vector>  // NOLINT(build/include_order)
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
@@ -20,6 +32,9 @@ using caffe::Datum;
 using caffe::Net;
 using std::string;
 namespace db = caffe::db;
+
+// for python, we use float as Dtype
+typedef float Dtype;
 
 // Computing the similarity of two features (e.g. *Cosine similarity or L2-norm)
 template<typename Dtype>
@@ -57,8 +72,12 @@ void listDatum(const Datum& datum){
 }
 
 template<typename Dtype>
-int retrieval_pipeline(int argc, char** argv) {
-  ::google::InitGoogleLogging(argv[0]);
+bp::object retrieval_pipeline_raw(bp::tuple args, bp::dict kwargs) {
+
+  if (bp::len(kwargs) > 0) {
+    throw std::runtime_error("main_raw takes no kwargs");
+  }
+
   const int num_required_args = 3;
   if (argc < num_required_args) {
     LOG(ERROR)<<
@@ -76,19 +95,17 @@ int retrieval_pipeline(int argc, char** argv) {
     " multiple feature blob names and dataset names separated by ','."
     " The names cannot contain white space characters and the number of blobs"
     " and datasets must be equal.";
-    return 1;
+    return bp::object();
   }
   int arg_pos = num_required_args;
-  LOG(ERROR)<< "the number of required arguments is: " << arg_pos;
 
   arg_pos = 0;  
   // 1st argument: the path to feature db
-  std::string feature_db_name(argv[++arg_pos]);
+  std::string feature_db_name(bp::extract<std::string>(args[1]));
   // 2nd argument: the type of the feature db
-  const char* db_type = argv[++arg_pos];
+  const char* db_type = bp::extract<const char*>(args[2]);
 
   // Open the feature db
-  LOG(INFO) << "Opening dataset: " << feature_db_name;
   boost::shared_ptr<db::DB> feature_db(db::GetDB(db_type));
   feature_db->Open(feature_db_name, db::READ);
 
@@ -112,13 +129,15 @@ int retrieval_pipeline(int argc, char** argv) {
   std::cout << "The similarity of vector[0] and vector[1] is " << dot_val << std::endl;
 
   // close the feature db
-  LOG(INFO) << "Closing dataset: " << feature_db_name;
   feature_db->Close();
 
-  LOG(ERROR)<< "Successfully extracted the features!";
-  return 0;
+
+  return bp::object();
 }
 
-int main(int argc, char** argv) {
-  return retrieval_pipeline<float>(argc, argv);
+BOOST_PYTHON_MODULE(_retrieval){
+  bp::def("retrieval_pipeline", bp::raw_function(&retrieval_pipeline_raw<Dtype>));
+  // boost python expects a void (missing) return value, while import_array
+  // returns NULL for python3. import_array1() forces a void return value.
+  import_array1();
 }

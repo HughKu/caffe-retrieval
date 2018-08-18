@@ -2,11 +2,14 @@
 #include <vector>
 
 #include "boost/algorithm/string.hpp"
+#include "boost/pointer_cast.hpp"
 #include "google/protobuf/text_format.h"
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
+#include "caffe/layer.hpp"
+#include "caffe/layers/image_data_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/db.hpp"
 #include "caffe/util/format.hpp"
@@ -16,6 +19,7 @@ using caffe::Blob;
 using caffe::Caffe;
 using caffe::Datum;
 using caffe::Net;
+using caffe::ImageDataLayer;
 using std::string;
 namespace db = caffe::db;
 
@@ -86,6 +90,7 @@ int feature_extraction_pipeline(int argc, char** argv) {
      top: "fc7"
    }
    */
+
   std::string feature_extraction_proto(argv[++arg_pos]);
   boost::shared_ptr<Net<Dtype> > feature_extraction_net(
       new Net<Dtype>(feature_extraction_proto, caffe::TEST));
@@ -126,6 +131,12 @@ int feature_extraction_pipeline(int argc, char** argv) {
   LOG(ERROR)<< "Extracting Features";
 
   Datum datum;
+
+  // the name of the image as the 'key' for feature db
+  LOG(ERROR)<< "Retrieve Layer \"data\"";
+  const boost::shared_ptr<ImageDataLayer<Dtype> > layer_ptr = boost::static_pointer_cast<ImageDataLayer<Dtype> >(feature_extraction_net->layer_by_name("data"));
+  const std::vector<std::pair<std::string, int> >& data_names_labels = layer_ptr->GetDataNameLabel();
+
   std::vector<int> image_indices(num_features, 0);
   for (int batch_index = 0; batch_index < num_mini_batches; ++batch_index) {
     feature_extraction_net->Forward();
@@ -146,7 +157,7 @@ int feature_extraction_pipeline(int argc, char** argv) {
         for (int d = 0; d < dim_features; ++d) {
           datum.add_float_data(feature_blob_data[d]);
         }
-        string key_str = caffe::format_int(image_indices[i], 10);
+        string key_str = data_names_labels[batch_index].first;
 
         // const string ready to be stored
         string out;

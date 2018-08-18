@@ -87,6 +87,17 @@ NONEMPTY_LINT_REPORT := $(BUILD_DIR)/$(LINT_EXT)
 PY$(PROJECT)_SRC := python/$(PROJECT)/_$(PROJECT).cpp
 PY$(PROJECT)_SO := python/$(PROJECT)/_$(PROJECT).so
 PY$(PROJECT)_HXX := include/$(PROJECT)/layers/python_layer.hpp
+
+# PYbpTest is the python wrapper for boost python dev testing
+PYbpTest_SRC := python/py_$(PROJECT)_module/_bp_test.cpp
+PYbpTest_SO := python/py_$(PROJECT)_module/_bp_test.so
+PYbpTest_HXX := include/$(PROJECT)/layers/python_layer.hpp
+
+# PYdjango is the python wrapper for backend retrieval process (feat. extraction & retreival)
+PYdjango_SRC := python/py_$(PROJECT)_module/_django_CV.cpp
+PYdjango_SO := python/py_$(PROJECT)_module/_django_CV.so
+PYdjango_HXX := include/$(PROJECT)/layers/python_layer.hpp
+
 # MAT$(PROJECT)_SRC is the mex entrance point of matlab package for $(PROJECT)
 MAT$(PROJECT)_SRC := matlab/+$(PROJECT)/private/$(PROJECT)_.cpp
 ifneq ($(MATLAB_DIR),)
@@ -274,7 +285,9 @@ ifeq ($(OSX), 1)
 	ifneq ($(CPU_ONLY), 1)
 		CUDA_VERSION := $(shell $(CUDA_DIR)/bin/nvcc -V | grep -o 'release \d' | grep -o '\d')
 		ifeq ($(shell echo | awk '{exit $(CUDA_VERSION) < 7.0;}'), 1)
+			#CXXFLAGS += -std=c++11 # added by Wei (C++11 lambda expr)
 			CXXFLAGS += -stdlib=libstdc++
+			#LINKFLAGS += -std=c++11 # added by Wei (C++11 lambda expr)
 			LINKFLAGS += -stdlib=libstdc++
 		endif
 		# clang throws this warning for cuda headers
@@ -497,6 +510,28 @@ py: $(PY$(PROJECT)_SO) $(PROTO_GEN_PY)
 $(PY$(PROJECT)_SO): $(PY$(PROJECT)_SRC) $(PY$(PROJECT)_HXX) | $(DYNAMIC_NAME)
 	@ echo CXX/LD -o $@ $<
 	$(Q)$(CXX) -shared -o $@ $(PY$(PROJECT)_SRC) \
+		-o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(PYTHON_LDFLAGS) \
+		-Wl,-rpath,$(ORIGIN)/../../build/lib
+
+#######################################
+# boost python testing 
+#######################################
+pybpTest: $(PYbpTest_SO) $(PROTO_GEN_PY)
+
+$(PYbpTest_SO): $(PYbpTest_SRC) $(PYbpTest_HXX) | $(DYNAMIC_NAME)
+	@ echo CXX/LD -o $@ $<
+	$(Q)$(CXX) -shared -o $@ $(PYbpTest_SRC) \
+		-o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(PYTHON_LDFLAGS) \
+		-Wl,-rpath,$(ORIGIN)/../../build/lib
+
+#######################################
+# django backends retrieval process (feat. extraction & retrieval) 
+#######################################
+pydjango: $(PYdjango_SO) $(PROTO_GEN_PY)
+
+$(PYdjango_SO): $(PYdjango_SRC) $(PYdjango_HXX) | $(DYNAMIC_NAME)
+	@ echo CXX/LD -o $@ $<
+	$(Q)$(CXX) -shared -o $@ $(PYdjango_SRC) \
 		-o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(PYTHON_LDFLAGS) \
 		-Wl,-rpath,$(ORIGIN)/../../build/lib
 

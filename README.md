@@ -1,26 +1,30 @@
-# Caffe
+# Discriminatively-learned global image representation using CNN as a local feature extractor for image retrieval
 
-[![Build Status](https://travis-ci.org/BVLC/caffe.svg?branch=master)](https://travis-ci.org/BVLC/caffe)
-[![License](https://img.shields.io/badge/license-BSD-blue.svg)](LICENSE)
+## Paper Pipeline and Key Idea
 
-Caffe is a deep learning framework made with expression, speed, and modularity in mind.
-It is developed by the Berkeley Vision and Learning Center ([BVLC](http://bvlc.eecs.berkeley.edu)) and community contributors.
+Take a look at the following pipeline and please refer to paper for more detail.
 
-Check out the [project site](http://caffe.berkeleyvision.org) for all the details like
+![Architecture](asset/Architecture.png)
+![Pairwise](asset/Pairwise.png)
 
-- [DIY Deep Learning for Vision with Caffe](https://docs.google.com/presentation/d/1UeKXVgRvvxg9OUdh_UiC5G71UMscNPlvArsWER41PsU/edit#slide=id.p)
-- [Tutorial Documentation](http://caffe.berkeleyvision.org/tutorial/)
-- [BVLC reference models](http://caffe.berkeleyvision.org/model_zoo.html) and the [community model zoo](https://github.com/BVLC/caffe/wiki/Model-Zoo)
-- [Installation instructions](http://caffe.berkeleyvision.org/installation.html)
+## Paper Citation
 
-and step-by-step examples.
+Please cite the following if you find this work helpful.
 
-[![Join the chat at https://gitter.im/BVLC/caffe](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BVLC/caffe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Please join the [caffe-users group](https://groups.google.com/forum/#!forum/caffe-users) or [gitter chat](https://gitter.im/BVLC/caffe) to ask questions and talk about methods and models.
-Framework development discussions and thorough bug reports are collected on [Issues](https://github.com/BVLC/caffe/issues).
-
-Happy brewing!
+    @inproceedings{DBLP:conf/vcip/KuCP15,
+      author    = {Wei{-}Lin Ku and
+                   Hung{-}Chun Chou and
+                   Wen{-}Hsiao Peng},
+      title     = {Discriminatively-learned global image representation using {CNN} as
+                   a local feature extractor for image retrieval},
+      booktitle = {2015 Visual Communications and Image Processing, {VCIP} 2015, Singapore,
+                   December 13-16, 2015},
+      pages     = {1--4},
+      year      = {2015},
+      crossref  = {DBLP:conf/vcip/2015},
+      url       = {https://doi.org/10.1109/VCIP.2015.7457829},
+      doi       = {10.1109/VCIP.2015.7457829},
+    }
 
 ## License and Citation
 
